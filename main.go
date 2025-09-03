@@ -2,33 +2,35 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 )
 
-func minMax(vals []int) (int, int) {
-	var initialized bool
-	var min int
-	var max int
-
-	for _, val := range vals {
-		if !initialized {
-			min = val
-			max = val
-			initialized = !initialized
+func main() {
+	arguments := os.Args
+	if len(arguments) == 1 {
+		fmt.Println("Please provide an argument!")
+		return
+	}
+	file := arguments[1]
+	path := os.Getenv("PATH")
+	pathSplit := filepath.SplitList(path)
+	for _, directory := range pathSplit {
+		fullPath := filepath.Join(directory, file)
+		// Does it exist?
+		fileInfo, err := os.Stat(fullPath)
+		if err != nil {
 			continue
 		}
-		if min > val {
-			min = val
+		mode := fileInfo.Mode()
+		// Is it a regular file?
+		if !mode.IsRegular() {
+			continue
 		}
-		if max < val {
-			max = val
+		// Is it executable?
+		if mode&0111 != 0 {
+			fmt.Println(fullPath)
+			return
 		}
-
 	}
-	return min, max
-}
-
-func main() {
-	vals := []int{10, 9, 8, 7, 6, 5, 4, 3, 2, 1, -1, -2, 100}
-	min, max := minMax(vals)
-	fmt.Printf("%d %d\n", min, max)
 }
